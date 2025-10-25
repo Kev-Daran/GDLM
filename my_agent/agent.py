@@ -8,13 +8,13 @@ def get_current_time(city : str) -> dict:
             "city" : city,
             "time" : "10:30 AM"}
 
-def find_relevant_people(company : str, role : str):
+def find_relevant_people(company : str, role : str, country : str = "India"):
     """
     Uses Google Search API to find people related to a company and role.
     Example: find_relevant_people("Google", "Data Scientist")
     """
 
-    query = f'site:linkedin.com/in "{role.strip()}" "{company.strip()}" email OR contact'
+    query = f'site:linkedin.com/in "{role.strip()}" "{company.strip()}" "{country.strip()}"email OR contact'
     url = f"https://www.googleapis.com/customsearch/v1?q={query}&key={os.getenv('GOOGLE_SEARCH_KEY')}&cx={os.getenv('SEARCH_ENGINE_ID')}"
 
     try:
@@ -43,17 +43,21 @@ def find_relevant_people(company : str, role : str):
             "message" : str(e)
         }
 
-# root_agent = Agent(
-#     model='gemini-2.5-flash',
-#     name='root_agent',
-#     description='A helpful assistant for user questions.',
-#     instruction='Answer user questions to the best of your knowledge',
-# )
 
-root_agent = Agent(
+searcher_agent = Agent(
     model='gemini-2.5-flash',
     name='searcher_agent',
     description='Finds people and contact info for specific roles in a company.',
-    instruction='Search the web for professionals working at the specified company and role, and return their names, profiles, and snippets',
+    instruction='Search the web for professionals working at the specified company and role, and return their names, profile links, and snippets',
     tools=[find_relevant_people]
 )
+
+root_agent = Agent(
+    model='gemini-2.5-flash',
+    name='root_agent',
+    description='A helpful assistant for user questions.',
+    instruction='Answer user questions to the best of your knowledge',
+    sub_agents=[searcher_agent]
+)
+
+
