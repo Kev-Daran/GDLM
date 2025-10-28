@@ -4,7 +4,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import pdfplumber
 
-LATEST_RESUME_PATH = 'my_agent\Dev_Karan_Suresh_CV.pdf'
+LATEST_RESUME_PATH = 'E:\GDLM\my_agent\Dev_Karan_Suresh_CV.pdf'
 
 
 def calculate_match_score(job_description: str, resume_path: str):
