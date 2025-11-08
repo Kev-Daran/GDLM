@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from google.adk.runners import Runner
@@ -6,6 +6,8 @@ from google.genai import types
 from google.adk.sessions import InMemorySessionService
 from my_agent.agent import root_agent
 from dotenv import load_dotenv
+import os
+from .config import UPLOAD_DIR, LATEST_RESUME_PATH
 
 load_dotenv()
 
@@ -99,3 +101,9 @@ async def chat(request: ChatRequest):
 @app.get("/api/health")
 async def health_check():
     return {"status": "ok"} 
+
+@app.post("/api/upload-resume")
+async def upload_resume(file: UploadFile = File(...)):
+    with open(LATEST_RESUME_PATH, "wb") as f:
+        f.write(await file.read())
+    return {"status": "success", "filename": "resume.pdf"}
