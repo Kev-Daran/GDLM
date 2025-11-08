@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Agent Assistant</title>
+  <link rel="stylesheet" href="styles/popup.css" />
+  <script src="config.js"></script>
+  <script defer src="popup.js"></script>
+</head>
+<body>
+  <div class="popup-container">
+    <header>
+      <h2>AI Agent Assistant</h2>
+      <div class="connection">
+        <span id="connectionStatus" class="status-indicator disconnected"></span>
+        <span id="statusText">Connecting...</span>
+      </div>
+    </header>
+
+    <main id="chat-container">
+      <div id="messages" class="messages"></div>
+    </main>
+
+    <footer>
+      <div class="agent-info">
+        <strong>Active Agent:</strong> <span id="currentAgent">Root Agent</span>
+      </div>
+
+      <div class="input-row">
+        <textarea id="userInput" placeholder="Ask something..." rows="2"></textarea>
+        <button id="sendBtn" class="btn primary">Send</button>
+      </div>
+
+      <div class="actions">
+        <input type="file" id="resumeUpload" accept=".pdf" hidden />
+        <button id="uploadBtn" class="btn secondary">📄 Upload Resume</button>
+      </div>
+
+      <div class="quick-buttons">
+        <button class="quick-btn" data-message="Find data scientists at Google">Find Professionals</button>
+        <button class="quick-btn" data-message="Analyze my resume for this job">Resume Match</button>
+        <button class="quick-btn" data-message="Switch to resume support agent">Switch Agent</button>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
