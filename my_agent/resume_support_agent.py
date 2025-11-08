@@ -4,7 +4,9 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import pdfplumber
 
-LATEST_RESUME_PATH = 'E:\GDLM\my_agent\Dev_Karan_Suresh_CV.pdf'
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # project root
+UPLOAD_DIR = os.path.join(BASE_DIR, "backend", "uploads")
+LATEST_RESUME_PATH = os.path.join(UPLOAD_DIR, "resume.pdf")
 
 
 def calculate_match_score(job_description: str, resume_path: str):
@@ -22,6 +24,9 @@ def calculate_match_score(job_description: str, resume_path: str):
     return round(score)
 
 def get_latest_resume():
+    """
+    Checks if a resume is stored and returns its path.
+    """
     if os.path.exists(LATEST_RESUME_PATH):
         return {"status": "success", "file_path": LATEST_RESUME_PATH}
     return {"status": "error", "message": "No resume stored yet"}
@@ -31,7 +36,13 @@ resume_support_agent = Agent(
     name='resume_support_agent',
     description='A helpful assistant for user questions.',
     instruction='''
-    You are Resume Support Agent - a specialized assistant for storing, analyzing, and improving resumes.
+    You are Resume Support Agent - a specialized assistant for analyzing resumes and matching them with job descriptions.
+    
+    When a user provides a job description:
+    1. First check if a resume exists using get_latest_resume()
+    2. If no resume exists, ask the user to upload one
+    3. If resume exists, use calculate_match_score() to analyze the match
+    4. Provide detailed feedback on the match score and suggestions
     ''',
     tools=[calculate_match_score, get_latest_resume]
 )
