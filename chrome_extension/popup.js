@@ -3,7 +3,12 @@ function generateId() {
 }
 
 const API_URL = CONFIG.API_URL;
-let conversationId = generateId();
+
+let conversationId;
+
+chrome.runtime.sendMessage({ type: 'GET_CONVERSATION_ID' }, (response) => {
+  conversationId = response.conversationId;
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   const userInput = document.getElementById('userInput');
