@@ -2,8 +2,16 @@ let conversationId = null;
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log('JobWeaver installed');
+  chrome.storage.local.remove('chatHistory');
   conversationId = generateId();
   chrome.storage.local.set({ conversationId });
+
+});
+
+chrome.runtime.onStartup.addListener(() => {
+  chrome.storage.local.remove('chatHistory', () => {
+    console.log('Chat history cleared on browser startup');
+  });
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
