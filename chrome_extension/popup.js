@@ -20,6 +20,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const statusText = document.getElementById('statusText');
   const connectionStatus = document.getElementById('connectionStatus');
 
+  chrome.storage.local.get('chatHistory', (data) => {
+  if (data.chatHistory) {
+    data.chatHistory.forEach(msg => {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${msg.type}`;
+      msgDiv.innerHTML = msg.text;
+      messages.appendChild(msgDiv);
+    });
+    messages.scrollTop = messages.scrollHeight;
+  }
+});
+
   // Check connection on load
   checkConnection();
 
@@ -182,6 +194,7 @@ function addMessage(text, type, isLoading = false) {
   }
 
   messages.appendChild(msgDiv);
+  saveMessages();
   messages.scrollTop = messages.scrollHeight;
   return msgId;
 }
@@ -203,6 +216,12 @@ function addMessage(text, type, isLoading = false) {
       agentInfo.textContent = 'Root Agent';
     }
   }
-
+  function saveMessages() {
+  const allMessages = Array.from(messages.children).map(msg => ({
+    type: msg.className.replace('message ', ''),
+    text: msg.innerHTML
+  }));
+  chrome.storage.local.set({ chatHistory: allMessages });
+}
 
 });
