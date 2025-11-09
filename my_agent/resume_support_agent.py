@@ -9,13 +9,13 @@ UPLOAD_DIR = os.path.join(BASE_DIR, "backend", "uploads")
 LATEST_RESUME_PATH = os.path.join(UPLOAD_DIR, "resume.pdf")
 
 
-def calculate_match_score(job_description: str, resume_path: str):
+def calculate_match_score(job_description: str):
     """
     Takes the job description and the resume path to find the cosine difference to get the score.
     The resume's path is stored in the global variable 'LATEST_RESUME_PATH'
     Example: calculate_match_score(job_description_string, LATEST_RESUME_PATH)
     """
-    with pdfplumber.open(resume_path) as pdf:
+    with pdfplumber.open(LATEST_RESUME_PATH) as pdf:
         resume_text = "\n".join([page.extract_text() for page in pdf.pages])
     
     vectorizer = CountVectorizer().fit([job_description, resume_text])
@@ -31,6 +31,18 @@ def get_latest_resume():
         return {"status": "success", "file_path": LATEST_RESUME_PATH}
     return {"status": "error", "message": "No resume stored yet"}
 
+def read_resume_text():
+    """
+    Reads and returns the text content of the latest resume.
+    """
+    if not os.path.exists(LATEST_RESUME_PATH):
+        return {"status": "error", "message": "No resume stored yet"}
+    
+    with pdfplumber.open(LATEST_RESUME_PATH) as pdf:
+        resume_text = "\n".join([page.extract_text() for page in pdf.pages])
+    
+    return {"status": "success", "resume_text": resume_text}
+
 resume_support_agent = Agent(
     model='gemini-2.5-flash',
     name='resume_support_agent',
@@ -43,6 +55,7 @@ resume_support_agent = Agent(
     2. If no resume exists, ask the user to upload one
     3. If resume exists, use calculate_match_score() to analyze the match
     4. Provide detailed feedback on the match score and suggestions
+    5. If needed, read the resume content using read_resume_text() to give specific advice
     ''',
-    tools=[calculate_match_score, get_latest_resume]
+    tools=[calculate_match_score, get_latest_resume, read_resume_text]
 )
