@@ -119,3 +119,26 @@ textarea {
   cursor: pointer;
   font-size: 0.85em;
 }
+.message.agent strong {
+  color: #00b7ff;
+}
+.message.agent em {
+  color: #ccc;
+  font-style: italic;
+}
+.profile-card {
+  background: #222;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  color: #f0f0f0;
+  font-size: 0.95em;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+}
+.profile-card a {
+  color: #00b7ff;
+  text-decoration: none;
+}
+.profile-card a:hover {
+  text-decoration: underline;
+}

@@ -128,22 +128,60 @@ document.addEventListener('DOMContentLoaded', () => {
     resumeUpload.value = '';
   }
 
-  function addMessage(text, type, isLoading = false) {
-    const msgId = generateId();
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${type}`;
-    msgDiv.id = msgId;
-    
-    if (isLoading) {
-      msgDiv.innerHTML = `${text}`;
+function addMessage(text, type, isLoading = false) {
+  const msgId = generateId();
+  const msgDiv = document.createElement('div');
+  msgDiv.className = `message ${type}`;
+  msgDiv.id = msgId;
+
+  if (isLoading) {
+    msgDiv.innerHTML = `${text}`;
+  } else {
+    const jsonMatch = text.match(/```(?:json)?([\s\S]*?)```/i);
+
+    if (jsonMatch) {
+      // Handle JSON data (like LinkedIn search)
+      try {
+        const parsed = JSON.parse(jsonMatch[1].trim());
+        if (Array.isArray(parsed)) {
+          msgDiv.innerHTML = `
+            <h4>Found Professionals</h4>
+            ${parsed.map(person => `
+              <div class="profile-card">
+                <p><strong>${person.name}</strong> — ${person.title}</p>
+                <p>${person.location}</p>
+                ${person.skills && person.skills.length > 0 
+                  ? `<p><strong>Skills:</strong> ${person.skills.join(', ')}</p>` 
+                  : ''}
+                <a href="${person.linkedin_url}" target="_blank">LinkedIn Profile</a>
+              </div>
+            `).join('')}
+          `;
+        } else {
+          msgDiv.innerHTML = `<pre>${JSON.stringify(parsed, null, 2)}</pre>`;
+        }
+      } catch (err) {
+        msgDiv.textContent = text;
+      }
+
     } else {
-      msgDiv.textContent = text;
+      // Handle formatted markdown-like text
+      let formatted = text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // bold
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')              // italics
+        .replace(/(\n|\r)+/g, '<br>')                      // newlines
+        .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>'); // links
+
+      msgDiv.innerHTML = formatted;
     }
-    
-    messages.appendChild(msgDiv);
-    messages.scrollTop = messages.scrollHeight;
-    return msgId;
   }
+
+  messages.appendChild(msgDiv);
+  messages.scrollTop = messages.scrollHeight;
+  return msgId;
+}
+
+
 
   function removeMessage(id) {
     const msg = document.getElementById(id);
