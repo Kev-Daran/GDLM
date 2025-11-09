@@ -1,0 +1,27 @@
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app/backend
+      - ./my_agent:/app/my_agent
+      - ./backend/uploads:/app/backend/uploads
+      - ./service-key.json:/app/service-key.json
+    environment:
+      - GOOGLE_SEARCH_KEY=${GOOGLE_SEARCH_KEY}
+      - SEARCH_ENGINE_ID=${SEARCH_ENGINE_ID}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GOOGLE_GENAI_USE_VERTEXTAI=1
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+      - GOOGLE_CLOUD_LOCATION=${GOOGLE_CLOUD_LOCATION}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/service-key.json
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - agent-network
+    
+networks:
+  agent-network:
+    driver: bridge
