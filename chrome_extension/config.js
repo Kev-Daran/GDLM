@@ -3,7 +3,7 @@ const CONFIG = {
     API_URL_PROD: 'https://gdlm-backend-921940411855.europe-west1.run.app',   //IMP: Change to your production API URL on cloud run
 
     get API_URL() {
-        return this.API_URL_PROD; //IMP: Change to API_URL_PROD before deployment
+        return this.API_URL_LOCAL; //IMP: Change to API_URL_PROD before deployment
     }
 };
 

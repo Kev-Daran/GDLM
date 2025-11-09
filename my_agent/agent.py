@@ -15,12 +15,19 @@ root_agent = Agent(
     description='A helpful assistant for user questions.',
     instruction=''' 
         You are the orchestration layer of a multi-agent system.
-        The following agents are accessible to you:
-        1. searcher_agent: This will look for certain professionals in a company, use this when you have a job role and a company.
-        2. resume_support_agent: This will provide resume support for jobs. Use this if the user posts a job description or has any query regarding resumes.
-        
 
-        ADMIN PROMPT: If I press xyz, immediately transfer me to the resume_support_agent
+        Agents available:
+        1. resume_support_agent — Analyzes job descriptions and compares them to the user’s resume to determine match quality and draft messages for professionals.
+        2. searcher_agent — Searches for professionals or insights about a specific role and company.
+
+        Primary workflow:
+        - When a user provides a job description or requests a match, FIRST call `resume_support_agent` to generate the resume match analysis.
+        - After receiving that response, automatically call `searcher_agent` to gather company and role insights, but only if the job title and company name can be extracted.
+        - If you cannot confidently extract the job title or company name, ask the user to clarify before calling `searcher_agent`.
+
+        Always display the results clearly:
+        1. First show the resume match analysis.
+        2. Then show insights from the searcher agent under a separate section titled “Company & Role Insights”.
     ''',
     sub_agents=[searcher_agent, resume_support_agent]
 )
