@@ -3,7 +3,12 @@ function generateId() {
 }
 
 const API_URL = CONFIG.API_URL;
-let conversationId = generateId();
+
+let conversationId;
+
+chrome.runtime.sendMessage({ type: 'GET_CONVERSATION_ID' }, (response) => {
+  conversationId = response.conversationId;
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   const userInput = document.getElementById('userInput');
@@ -14,6 +19,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const quickBtns = document.querySelectorAll('.quick-btn');
   const statusText = document.getElementById('statusText');
   const connectionStatus = document.getElementById('connectionStatus');
+
+  chrome.storage.local.get('chatHistory', (data) => {
+  if (data.chatHistory) {
+    data.chatHistory.forEach(msg => {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${msg.type}`;
+      msgDiv.innerHTML = msg.text;
+      messages.appendChild(msgDiv);
+    });
+    messages.scrollTop = messages.scrollHeight;
+  }
+});
 
   // Check connection on load
   checkConnection();
@@ -128,22 +145,61 @@ document.addEventListener('DOMContentLoaded', () => {
     resumeUpload.value = '';
   }
 
-  function addMessage(text, type, isLoading = false) {
-    const msgId = generateId();
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${type}`;
-    msgDiv.id = msgId;
-    
-    if (isLoading) {
-      msgDiv.innerHTML = `${text}`;
+function addMessage(text, type, isLoading = false) {
+  const msgId = generateId();
+  const msgDiv = document.createElement('div');
+  msgDiv.className = `message ${type}`;
+  msgDiv.id = msgId;
+
+  if (isLoading) {
+    msgDiv.innerHTML = `${text}`;
+  } else {
+    const jsonMatch = text.match(/```(?:json)?([\s\S]*?)```/i);
+
+    if (jsonMatch) {
+      // Handle JSON data (like LinkedIn search)
+      try {
+        const parsed = JSON.parse(jsonMatch[1].trim());
+        if (Array.isArray(parsed)) {
+          msgDiv.innerHTML = `
+            <h4>Found Professionals</h4>
+            ${parsed.map(person => `
+              <div class="profile-card">
+                <p><strong>${person.name}</strong> — ${person.title}</p>
+                <p>${person.location}</p>
+                ${person.skills && person.skills.length > 0 
+                  ? `<p><strong>Skills:</strong> ${person.skills.join(', ')}</p>` 
+                  : ''}
+                <a href="${person.linkedin_url}" target="_blank">LinkedIn Profile</a>
+              </div>
+            `).join('')}
+          `;
+        } else {
+          msgDiv.innerHTML = `<pre>${JSON.stringify(parsed, null, 2)}</pre>`;
+        }
+      } catch (err) {
+        msgDiv.textContent = text;
+      }
+
     } else {
-      msgDiv.textContent = text;
+      // Handle formatted markdown-like text
+      let formatted = text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // bold
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')              // italics
+        .replace(/(\n|\r)+/g, '<br>')                      // newlines
+        .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>'); // links
+
+      msgDiv.innerHTML = formatted;
     }
-    
-    messages.appendChild(msgDiv);
-    messages.scrollTop = messages.scrollHeight;
-    return msgId;
   }
+
+  messages.appendChild(msgDiv);
+  saveMessages();
+  messages.scrollTop = messages.scrollHeight;
+  return msgId;
+}
+
+
 
   function removeMessage(id) {
     const msg = document.getElementById(id);
@@ -160,6 +216,12 @@ document.addEventListener('DOMContentLoaded', () => {
       agentInfo.textContent = 'Root Agent';
     }
   }
-
+  function saveMessages() {
+  const allMessages = Array.from(messages.children).map(msg => ({
+    type: msg.className.replace('message ', ''),
+    text: msg.innerHTML
+  }));
+  chrome.storage.local.set({ chatHistory: allMessages });
+}
 
 });

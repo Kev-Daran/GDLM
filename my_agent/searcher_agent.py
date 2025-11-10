@@ -76,6 +76,8 @@ searcher_agent = Agent(
     6. Do not generate fake or random data. Let the user know if the API is unavailable.
 
     7. Your output must be clean JSON — no text outside the JSON block.
+
+    IMP: If you think something is out of your functionality, transfer to root_agent and let it figure it out.
     ''',
     tools=[find_relevant_people]
 )
